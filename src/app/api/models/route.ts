@@ -820,7 +820,7 @@ export async function GET(
       {
         success: false,
         error:
-          "No providers available. Add REPLICATE_API_KEY, FAL_API_KEY, KIE_API_KEY, or WAVESPEED_API_KEY to .env.local or configure in Settings.",
+          "No providers available. Add REPLICATE_API_KEY, FAL_API_KEY, KIE_API_KEY, WAVESPEED_API_KEY, KLING_API_KEY, KIMI_API_KEY, or CLAUDE_API_KEY to .env.local or configure in Settings.",
       },
       { status: 400 }
     );

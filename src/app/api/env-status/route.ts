@@ -7,6 +7,9 @@ export interface EnvStatusResponse {
   fal: boolean;
   kie: boolean;
   wavespeed: boolean;
+  kling: boolean;
+  kimi: boolean;
+  claude: boolean;
 }
 
 export async function GET() {
@@ -18,6 +21,9 @@ export async function GET() {
     fal: !!process.env.FAL_API_KEY,
     kie: !!process.env.KIE_API_KEY,
     wavespeed: !!process.env.WAVESPEED_API_KEY,
+    kling: !!process.env.KLING_API_KEY,
+    kimi: !!process.env.KIMI_API_KEY,
+    claude: !!process.env.CLAUDE_API_KEY,
   };
 
   return NextResponse.json(status);

@@ -190,6 +190,141 @@ async function generateWithOpenAI(
   return text;
 }
 
+async function generateWithKimi(
+  prompt: string,
+  model: LLMModelType,
+  temperature: number,
+  maxTokens: number,
+  images?: string[],
+  requestId?: string,
+  userApiKey?: string | null,
+  userApiUrl?: string | null
+): Promise<string> {
+  // Kimi supports two modes:
+  // 1) If a custom KIMI_API_URL is provided, POST to that URL with Bearer auth.
+  // 2) Otherwise fall back to OpenAI-compatible endpoint using the provided API key.
+
+  const apiUrl = userApiUrl || process.env.KIMI_API_URL || null;
+  const apiKey = userApiKey || process.env.KIMI_API_KEY || null;
+
+  if (!apiKey && !apiUrl) {
+    logger.error('api.error', 'KIMI API not configured', { requestId });
+    throw new Error("KIMI API not configured. Add KIMI_API_KEY or KIMI_API_URL to .env.local or configure in Settings.");
+  }
+
+  // If an explicit API URL is provided, assume OpenAI-compatible chat completions API shape
+  if (apiUrl) {
+    logger.info('api.llm', 'Calling Kimi custom API', { requestId, apiUrl, model });
+
+    const body: any = {
+      model: model || 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature,
+      max_tokens: maxTokens,
+    };
+
+    const startTime = Date.now();
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(body),
+    });
+    const duration = Date.now() - startTime;
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      logger.error('api.error', 'Kimi API request failed', { requestId, status: response.status, error: err });
+      throw new Error(err?.error || `Kimi API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    // Support OpenAI-style and simple { text } responses
+    const text = data?.choices?.[0]?.message?.content || data?.text || data?.message || null;
+    if (!text) {
+      logger.error('api.error', 'No text in Kimi response', { requestId });
+      throw new Error('No text in Kimi response');
+    }
+
+    logger.info('api.llm', 'Kimi API response received', { requestId, duration, responseLength: text.length });
+    return text;
+  }
+
+  // Fallback: treat Kimi as OpenAI-compatible using the provided API key
+  return await generateWithOpenAI(prompt, model, temperature, maxTokens, images, requestId, apiKey);
+}
+
+async function generateWithClaude(
+  prompt: string,
+  model: LLMModelType,
+  temperature: number,
+  maxTokens: number,
+  images?: string[],
+  requestId?: string,
+  userApiKey?: string | null
+): Promise<string> {
+  const apiKey = userApiKey || process.env.CLAUDE_API_KEY;
+  if (!apiKey) {
+    logger.error('api.error', 'CLAUDE_API_KEY not configured', { requestId });
+    throw new Error("CLAUDE_API_KEY not configured. Add it to .env.local or configure in Settings.");
+  }
+
+  // Prefer a recent Claude model; keep configurable in code if needed
+  const modelId = "claude-2.1";
+
+  // Anthropic expects a single string `prompt` for the /v1/complete API.
+  // Use simple role-style framing to improve responses and add stop sequences
+  const framedPrompt = `\n\nHuman: ${prompt}\n\nAssistant:`;
+
+  const body: any = {
+    model: modelId,
+    prompt: framedPrompt,
+    max_tokens_to_sample: maxTokens,
+    temperature,
+    // Stop when the assistant finishes or when a new human turn begins
+    stop_sequences: ["\n\nHuman:"] ,
+  };
+
+  logger.info('api.llm', 'Calling Anthropic Claude API', {
+    requestId,
+    model: modelId,
+    temperature,
+    maxTokens,
+    promptLength: prompt.length,
+  });
+
+  const startTime = Date.now();
+  const response = await fetch("https://api.anthropic.com/v1/complete", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const duration = Date.now() - startTime;
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    logger.error('api.error', 'Anthropic API request failed', { requestId, status: response.status, error: err });
+    throw new Error(err?.error || `Anthropic API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  // Claude returns `completion` (string) for the v1/complete endpoint
+  const text = data?.completion || data?.completion_text || data?.text || null;
+  if (!text) {
+    logger.error('api.error', 'No text in Anthropic response', { requestId });
+    throw new Error('No text in Anthropic response');
+  }
+
+  logger.info('api.llm', 'Anthropic API response received', { requestId, duration, responseLength: text.length });
+  // Trim any assistant/human framing left in the response
+  return text.replace(/^\s*Assistant:\s*/i, "").trim();
+}
+
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
 
@@ -197,6 +332,8 @@ export async function POST(request: NextRequest) {
     // Get user-provided API keys from headers (override env variables)
     const geminiApiKey = request.headers.get("X-Gemini-API-Key");
     const openaiApiKey = request.headers.get("X-OpenAI-API-Key");
+    const claudeApiKey = request.headers.get("X-Claude-API-Key");
+    const kimiApiKey = request.headers.get("X-Kimi-API-Key");
 
     const body: LLMGenerateRequest = await request.json();
     const {
@@ -233,6 +370,13 @@ export async function POST(request: NextRequest) {
       text = await generateWithGoogle(prompt, model, temperature, maxTokens, images, requestId, geminiApiKey);
     } else if (provider === "openai") {
       text = await generateWithOpenAI(prompt, model, temperature, maxTokens, images, requestId, openaiApiKey);
+    } else if (provider === "claude") {
+      // Anthropic Claude
+      text = await generateWithClaude(prompt, model, temperature, maxTokens, images, requestId, claudeApiKey);
+    } else if (provider === "kimi") {
+      // Kimi - use Kimi helper which supports custom KIMI_API_URL or OpenAI-compatible fallback
+      const kimiApiUrl = request.headers.get("X-Kimi-API-URL");
+      text = await generateWithKimi(prompt, model, temperature, maxTokens, images, requestId, kimiApiKey || openaiApiKey, kimiApiUrl || undefined);
     } else {
       logger.warn('api.llm', 'Unknown provider requested', { requestId, provider });
       return NextResponse.json<LLMGenerateResponse>(

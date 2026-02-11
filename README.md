@@ -50,6 +50,8 @@ In addition to Google Gemini, Rootvrse now supports:
 
 Configure API keys in Project Settings to enable these providers.
 
+For additional provider configuration (Kimi, Claude) and per-request overrides, see the integration docs: [docs/kimi-claude-integration.md](docs/kimi-claude-integration.md)
+
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)

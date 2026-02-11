@@ -392,7 +392,7 @@ export function ProjectSetupModal({
         </h2>
 
         {/* Tab Bar */}
-        <div className="flex gap-4 border-b border-neutral-700 mb-4">
+        <div className="flex gap-4 border-b border-neutral-700 mb-4 items-end">
           <button
             onClick={() => setActiveTab("project")}
             className={`pb-2 text-sm ${activeTab === "project" ? "text-neutral-100 border-b-2 border-white" : "text-neutral-400"}`}
@@ -417,6 +417,16 @@ export function ProjectSetupModal({
           >
             Node Defaults
           </button>
+          <div className="ml-auto">
+            <a
+              href="/docs/kimi-claude-integration.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-400 hover:text-blue-300"
+            >
+              Integration Docs
+            </a>
+          </div>
         </div>
 
         {/* Project Tab Content */}

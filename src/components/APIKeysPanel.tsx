@@ -14,6 +14,9 @@ interface APIKeysState {
   openai: APIKey;
   replicate: APIKey;
   fal: APIKey;
+  kling: APIKey;
+  kimi: APIKey;
+  claude: APIKey;
 }
 
 const API_KEYS_STORAGE_KEY = "rootvrse-api-keys";
@@ -51,6 +54,30 @@ const providers = [
     color: "bg-pink-500",
     envKey: "FAL_API_KEY",
   },
+  {
+    id: "kling",
+    name: "Kling",
+    description: "Kling model provider",
+    docsUrl: "https://example.com/kling",
+    color: "bg-indigo-500",
+    envKey: "KLING_API_KEY",
+  },
+  {
+    id: "kimi",
+    name: "Kimi",
+    description: "Kimi model provider",
+    docsUrl: "https://example.com/kimi",
+    color: "bg-teal-500",
+    envKey: "KIMI_API_KEY",
+  },
+  {
+    id: "claude",
+    name: "Claude",
+    description: "Anthropic Claude model",
+    docsUrl: "https://www.anthropic.com/",
+    color: "bg-yellow-500",
+    envKey: "CLAUDE_API_KEY",
+  },
 ];
 
 export function APIKeysPanel() {
@@ -59,6 +86,9 @@ export function APIKeysPanel() {
     openai: { key: "", isSet: false },
     replicate: { key: "", isSet: false },
     fal: { key: "", isSet: false },
+    kling: { key: "", isSet: false },
+    kimi: { key: "", isSet: false },
+    claude: { key: "", isSet: false },
   });
 
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
@@ -339,6 +369,9 @@ export function APIKeysPanel() {
           <li>• You can clear keys at any time</li>
           <li>• For server deployments, add keys to your <code className="bg-neutral-900 px-2 py-1 rounded">.env.local</code> file</li>
         </ul>
+        <p className="text-xs mt-3">
+          Read more: <a href="/docs/kimi-claude-integration.md" className="text-blue-400 hover:text-blue-300" target="_blank" rel="noopener noreferrer">Kimi &amp; Claude integration docs</a>
+        </p>
       </div>
     </div>
   );
