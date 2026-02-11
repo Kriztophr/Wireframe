@@ -1,12 +1,35 @@
-# Node Banana
+# Rootvrse
 
-> **Important note:** This is in early development, it probably has some issues. Use Chrome. For support or raising any issues join the [discord](https://discord.com/invite/89Nr6EKkTf). See the [docs](https://node-banana-docs.vercel.app/) for help, installation guides, and user guides.
+> **Important note:** This is in early development, it probably has some issues. Use Chrome. For support or raising any issues join the community. See the [docs](https://node-banana-docs.vercel.app/) for help, installation guides, and user guides.
+## Features
 
-Node Banana is node-based workflow application for generating images with Nano Banana Pro. Build image generation pipelines by connecting nodes on a visual canvas. Recent Fal and Replicate integration allows for complex image and video pipelines from any provider, but be aware this is still in testing. 
+- Node-based image annotation and generation flows
+
+## Accessibility
+
+This project includes accessibility improvements to help keyboard and screen reader users:
+
+- Added a keyboard `Skip to main content` link in `src/app/layout.tsx`.
+- App content wrapped in a `main` landmark (`#main-content`).
+- Global helpers in `src/app/globals.css`: `.sr-only`, `.skip-link`, and enhanced `:focus-visible` outlines.
+- Header improvements: `role="banner"`, navigation landmark, and `aria-label`s on primary controls in `src/components/Header.tsx`.
+- Modals updated (`ProjectSetupModal` and `AnnotationModal`) with `role="dialog"`, `aria-modal="true"`, labeled titles, focus trapping, and focus restoration on close.
+- Toast notifications announce via `role="status"` and `aria-live="polite"`.
+
+Next recommended steps:
+
+- Add automated accessibility tests (e.g., `axe-core`) in CI.
+- Add ARIA labels to any remaining icon-only buttons across the app.
+- Ensure all custom canvas controls expose keyboard equivalents and visible focus styles.
+# Rootvrse
+
+> **Important note:** This is in early development, it probably has some issues. Use Chrome. For support or raising any issues join the community. See the [docs](https://node-banana-docs.vercel.app/) for help, installation guides, and user guides.
+
+Rootvrse is node-based workflow application for generating images with Nano Banana Pro. Build image generation pipelines by connecting nodes on a visual canvas. Recent Fal and Replicate integration allows for complex image and video pipelines from any provider, but be aware this is still in testing. 
 
 Built mainly with Opus 4.5.
 
-![Node Banana Screenshot](public/node-banana.png)
+![Rootvrse Screenshot](public/node-banana.png)
 
 ## Features
 
@@ -21,7 +44,7 @@ Built mainly with Opus 4.5.
 
 ## Multi-Provider Support (Beta)
 
-In addition to Google Gemini, Node Banana now supports:
+In addition to Google Gemini, Rootvrse now supports:
 - **Replicate** - Access thousands of open-source models
 - **fal.ai** - Fast inference for image and video generation
 
@@ -110,7 +133,7 @@ npm run test:coverage # With coverage report
 ```
 
 ## Contributions
-PRs are welcome, please pull the latest changes from develop before creating a PR and make it to the develop branch, not master. Not that I'm primarily making this for my own workflows, if the PR conflicts with my own plans I'll politely reject it. If you want to collaborate, consider joining the Discord and we can hash something out. 
+PRs are welcome, please pull the latest changes from develop before creating a PR and make it to the develop branch, not master. Not that I'm primarily making this for my own workflows, if the PR conflicts with my own plans I'll politely reject it. If you want to collaborate, get in touch and we can hash something out. 
 
 ## License
 

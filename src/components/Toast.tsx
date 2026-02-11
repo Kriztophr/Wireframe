@@ -86,6 +86,8 @@ export function Toast() {
     <div className="fixed top-6 right-6 z-[200] animate-in fade-in slide-in-from-top-4 duration-300 max-w-md">
       <div
         className={`flex flex-col rounded-lg border shadow-xl ${typeStyles[type]}`}
+        role="status"
+        aria-live="polite"
       >
         <div className="flex items-center gap-3 px-4 py-3">
           {typeIcons[type]}
@@ -94,6 +96,7 @@ export function Toast() {
             onClick={handleCopy}
             className="p-1 rounded hover:bg-white/10 transition-colors"
             title="Copy message"
+            aria-label="Copy message details"
           >
             {copied ? (
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -109,6 +112,7 @@ export function Toast() {
             onClick={hide}
             className="p-1 rounded hover:bg-white/10 transition-colors"
             title="Dismiss"
+            aria-label="Dismiss notification"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

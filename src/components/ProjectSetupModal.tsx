@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { generateWorkflowId, useWorkflowStore } from "@/store/workflowStore";
 import { ProviderType, ProviderSettings, NodeDefaultsConfig, LLMProvider, LLMModelType } from "@/types";
 import { EnvStatusResponse } from "@/app/api/env-status/route";
 import { loadNodeDefaults, saveNodeDefaults } from "@/store/utils/localStorage";
 import { ProviderModel } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
+import { APIKeysPanel } from "@/components/APIKeysPanel";
 
 // LLM provider and model options (mirrored from LLMGenerateNode)
 const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
@@ -97,7 +98,7 @@ export function ProjectSetupModal({
   } = useWorkflowStore();
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<"project" | "providers" | "nodeDefaults">("project");
+  const [activeTab, setActiveTab] = useState<"project" | "providers" | "nodeDefaults" | "apiKeys">("project");
 
   // Project tab state
   const [name, setName] = useState("");
@@ -304,6 +305,60 @@ export function ProjectSetupModal({
     }
   };
 
+  const modalRef = useRef<HTMLDivElement | null>(null);
+
+  // Trap focus within the modal and restore focus on close
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const prevActive = document.activeElement as HTMLElement | null;
+
+    const el = modalRef.current;
+    const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const focusFirst = () => {
+      const nodes = el ? Array.from(el.querySelectorAll<HTMLElement>(focusableSelector)) : [];
+      if (nodes.length) {
+        nodes[0].focus();
+      } else if (el) {
+        el.focus();
+      }
+    };
+
+    focusFirst();
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Tab") {
+        const nodes = el ? Array.from(el.querySelectorAll<HTMLElement>(focusableSelector)) : [];
+        if (nodes.length === 0) {
+          e.preventDefault();
+          return;
+        }
+
+        const first = nodes[0];
+        const last = nodes[nodes.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKey);
+
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      if (prevActive) prevActive.focus();
+    };
+  }, [isOpen, onClose]);
+
   const updateLocalProvider = (
     providerId: ProviderType,
     updates: { enabled?: boolean; apiKey?: string | null }
@@ -324,10 +379,15 @@ export function ProjectSetupModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="project-setup-title"
+        tabIndex={-1}
         className="bg-neutral-800 rounded-lg p-6 w-[480px] border border-neutral-700 shadow-xl"
         onKeyDown={handleKeyDown}
       >
-        <h2 className="text-lg font-semibold text-neutral-100 mb-4">
+        <h2 id="project-setup-title" className="text-lg font-semibold text-neutral-100 mb-4">
           {mode === "new" ? "New Project" : "Project Settings"}
         </h2>
 
@@ -344,6 +404,12 @@ export function ProjectSetupModal({
             className={`pb-2 text-sm ${activeTab === "providers" ? "text-neutral-100 border-b-2 border-white" : "text-neutral-400"}`}
           >
             Providers
+          </button>
+          <button
+            onClick={() => setActiveTab("apiKeys")}
+            className={`pb-2 text-sm ${activeTab === "apiKeys" ? "text-neutral-100 border-b-2 border-white" : "text-neutral-400"}`}
+          >
+            API Keys
           </button>
           <button
             onClick={() => setActiveTab("nodeDefaults")}
@@ -717,6 +783,13 @@ export function ProjectSetupModal({
             <p className="text-xs text-neutral-500 mt-2">
               Add API keys via <code className="px-1 py-0.5 bg-neutral-800 rounded">.env.local</code> for better security. Keys added here override .env and are stored in your browser.
             </p>
+          </div>
+        )}
+
+        {/* API Keys Tab Content */}
+        {activeTab === "apiKeys" && (
+          <div className="max-h-[70vh] overflow-y-auto">
+            <APIKeysPanel />
           </div>
         )}
 

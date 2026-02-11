@@ -316,14 +316,7 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
           <span className="text-xs text-neutral-400">
             Your browser doesn&apos;t support video encoding.
           </span>
-          <a
-            href="https://discord.gg/placeholder"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] text-blue-400 hover:text-blue-300 underline"
-          >
-            Doesn&apos;t seem right? Message Willie on Discord.
-          </a>
+          <div className="text-[10px] text-blue-400">Doesn't seem right? Message Willie.</div>
         </div>
       </BaseNode>
     );

@@ -66,6 +66,7 @@ export function AnnotationModal() {
   const [pendingTextPosition, setPendingTextPosition] = useState<{ x: number; y: number } | null>(null);
   const textInputCreatedAt = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (sourceImage) {
@@ -408,10 +409,53 @@ export function AnnotationModal() {
     { type: "text", label: "Text" },
   ];
 
+  // Focus trap for annotation modal
+  useEffect(() => {
+    if (!isModalOpen) return;
+
+    const prev = document.activeElement as HTMLElement | null;
+    const el = modalRef.current;
+    const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const focusFirst = () => {
+      const nodes = el ? Array.from(el.querySelectorAll<HTMLElement>(focusableSelector)) : [];
+      if (nodes.length) nodes[0].focus();
+      else if (el) el.focus();
+    };
+
+    focusFirst();
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Tab') {
+        const nodes = el ? Array.from(el.querySelectorAll<HTMLElement>(focusableSelector)) : [];
+        if (nodes.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        const first = nodes[0];
+        const last = nodes[nodes.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      if (prev) prev.focus();
+    };
+  }, [isModalOpen]);
+
   return (
-    <div className="fixed inset-0 z-[100] bg-neutral-950 flex flex-col">
+    <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="annotation-modal-title" tabIndex={-1} className="fixed inset-0 z-[100] bg-neutral-950 flex flex-col">
       {/* Top Bar */}
       <div className="h-14 bg-neutral-900 flex items-center justify-between px-4 border-b border-neutral-800">
+        <h2 id="annotation-modal-title" className="sr-only">Annotate image</h2>
         <div className="flex items-center gap-1.5">
           {tools.map((tool) => (
             <button

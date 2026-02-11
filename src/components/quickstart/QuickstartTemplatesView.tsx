@@ -58,16 +58,8 @@ export function QuickstartTemplatesView({
             contentLevel: "full",
           }),
         });
-
         const result = await response.json();
-
-        if (!result.success) {
-          throw new Error(result.error || "Failed to load template");
-        }
-
-        if (result.workflow) {
-          onWorkflowSelected(result.workflow);
-        }
+        onWorkflowSelected(result);
       } catch (err) {
         console.error("Error loading preset:", err);
         setError(err instanceof Error ? err.message : "Failed to load template");
@@ -322,18 +314,9 @@ export function QuickstartTemplatesView({
             </div>
           )}
 
-          {/* Discord CTA */}
+          {/* Community CTA */}
           <p className="text-xs text-neutral-500 mt-3">
-            Want to share your workflow?{" "}
-            <a
-              href="https://discord.com/invite/89Nr6EKkTf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-purple-400 hover:text-purple-300 underline"
-            >
-              Join our Discord
-            </a>{" "}
-            to submit it to the community templates.
+            Want to share your workflow? <span className="text-purple-400">Join our community</span> to submit it to the community templates.
           </p>
         </div>
 

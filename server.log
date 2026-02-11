@@ -1,0 +1,19 @@
+
+> node-banana@1.0.0 dev
+> node server.js
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+> Ready on http://localhost:3001
+> Server timeout set to 10 minutes
+○ Compiling /_not-found/page ...
+ GET /_next/webpack-hmr?id=xlS-163fx65yiaTRUXjPC 404 in 8.4s (compile: 8.3s, render: 79ms)
+ GET / 200 in 5.7s (compile: 5.2s, render: 502ms)
+ GET / 200 in 51ms (compile: 3ms, render: 48ms)
+✓ Compiled in 1960ms
+ GET / 200 in 139ms (compile: 76ms, render: 63ms)
+ GET / 200 in 45ms (compile: 7ms, render: 38ms)
+ GET / 200 in 46ms (compile: 3ms, render: 43ms)
+ GET / 200 in 27ms (compile: 3ms, render: 24ms)
+✓ Compiled in 204ms
+✓ Compiled in 133ms
+✓ Compiled in 189ms

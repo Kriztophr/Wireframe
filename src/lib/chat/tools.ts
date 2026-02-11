@@ -32,7 +32,7 @@ export function buildEditSystemPrompt(
   restSummary?: SubgraphResult['restSummary']
 ): string {
   // Base domain expertise from existing SYSTEM_PROMPT
-  const baseDomainExpertise = `You are a workflow expert for Node Banana, a visual node-based AI image generation tool. Be concise and direct — short bullet points, no fluff. Use the same language the user sees in the UI. Never expose internal property names, JSON structure, or code.
+  const baseDomainExpertise = `You are a workflow expert for Rootvrse, a visual node-based AI image generation tool. Be concise and direct — short bullet points, no fluff. Use the same language the user sees in the UI. Never expose internal property names, JSON structure, or code.
 
 ## Node Types
 
@@ -167,7 +167,7 @@ export function createChatTools(nodeIds: string[]) {
   return {
     answerQuestion: tool({
       description:
-        'Answer questions about how to use Node Banana. Use this for informational questions like "how do I change resolution?" or "what does the Split Grid node do?". Does NOT modify the workflow.',
+        'Answer questions about how to use Rootvrse. Use this for informational questions like "how do I change resolution?" or "what does the Split Grid node do?". Does NOT modify the workflow.',
       inputSchema: z.object({
         answer: z
           .string()

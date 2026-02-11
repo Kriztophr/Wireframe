@@ -17,7 +17,7 @@ describe("QuickstartInitialView", () => {
   });
 
   describe("Basic Rendering", () => {
-    it("should render the Node Banana title and logo", () => {
+    it("should render the Rootvrse title and logo", () => {
       render(
         <QuickstartInitialView
           onNewProject={mockOnNewProject}
@@ -27,7 +27,7 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      expect(screen.getByText("Node Banana")).toBeInTheDocument();
+      expect(screen.getByText("Rootvrse")).toBeInTheDocument();
       expect(screen.getByAltText("")).toBeInTheDocument(); // Logo image
     });
 
@@ -174,7 +174,7 @@ describe("QuickstartInitialView", () => {
   });
 
   describe("External Links", () => {
-    it("should render Discord link with correct URL", () => {
+    it("should render attribution text and docs link", () => {
       render(
         <QuickstartInitialView
           onNewProject={mockOnNewProject}
@@ -184,29 +184,13 @@ describe("QuickstartInitialView", () => {
         />
       );
 
-      const discordLink = screen.getByText("Discord").closest("a");
-      expect(discordLink).toHaveAttribute(
-        "href",
-        "https://discord.com/invite/89Nr6EKkTf"
-      );
-      expect(discordLink).toHaveAttribute("target", "_blank");
-      expect(discordLink).toHaveAttribute("rel", "noopener noreferrer");
-    });
+      const madeBy = screen.getByText(/made by willie/i);
+      expect(madeBy).toBeInTheDocument();
 
-    it("should render Twitter/X link with correct URL", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
-      const twitterLink = screen.getByText("Willie").closest("a");
-      expect(twitterLink).toHaveAttribute("href", "https://x.com/ReflctWillie");
-      expect(twitterLink).toHaveAttribute("target", "_blank");
-      expect(twitterLink).toHaveAttribute("rel", "noopener noreferrer");
+      const docsLink = screen.getByText("Docs").closest("a");
+      expect(docsLink).toHaveAttribute("href", "https://node-banana-docs.vercel.app/");
+      expect(docsLink).toHaveAttribute("target", "_blank");
+      expect(docsLink).toHaveAttribute("rel", "noopener noreferrer");
     });
 
     it("should render docs link", () => {
