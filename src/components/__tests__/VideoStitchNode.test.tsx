@@ -96,6 +96,7 @@ const createNodeData = (overrides: Partial<VideoStitchNodeData> = {}): VideoStit
   clips: [],
   clipOrder: [],
   outputVideo: null,
+  loopCount: 1,
   status: "idle",
   error: null,
   progress: 0,
@@ -103,9 +104,17 @@ const createNodeData = (overrides: Partial<VideoStitchNodeData> = {}): VideoStit
   ...overrides,
 });
 
-const createNodeProps = (data: Partial<VideoStitchNodeData> = {}) => ({
+  const createNodeProps = (data: Partial<VideoStitchNodeData> = {}) => ({
   id: "test-stitch-1",
   type: "videoStitch" as const,
+  draggable: true,
+  dragging: false,
+  selectable: true,
+  deletable: true,
+  zIndex: 0,
+    isConnectable: true,
+    positionAbsoluteX: 0,
+    positionAbsoluteY: 0,
   data: createNodeData(data),
   selected: false,
 });

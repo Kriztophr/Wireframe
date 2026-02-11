@@ -419,7 +419,7 @@ export function ProjectSetupModal({
           </button>
           <div className="ml-auto">
             <a
-              href="/docs/kimi-claude-integration.md"
+              href="/docs/kimi-claude-integration"
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-blue-400 hover:text-blue-300"

@@ -64,6 +64,14 @@ describe("LLMGenerateNode", () => {
   const createNodeProps = (data: Partial<LLMGenerateNodeData> = {}) => ({
     id: "test-llm-1",
     type: "llmGenerate" as const,
+    draggable: true,
+    dragging: false,
+    selectable: true,
+    deletable: true,
+    zIndex: 0,
+    isConnectable: true,
+    positionAbsoluteX: 0,
+    positionAbsoluteY: 0,
     data: createNodeData(data),
     selected: false,
   });

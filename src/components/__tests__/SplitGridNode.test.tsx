@@ -78,9 +78,17 @@ describe("SplitGridNode", () => {
     ...overrides,
   });
 
-  const createNodeProps = (data: Partial<SplitGridNodeData> = {}) => ({
+    const createNodeProps = (data: Partial<SplitGridNodeData> = {}) => ({
     id: "split-grid-node-1",
     type: "splitGrid" as const,
+      draggable: true,
+      dragging: false,
+      selectable: true,
+      deletable: true,
+      zIndex: 0,
+      isConnectable: true,
+      positionAbsoluteX: 0,
+      positionAbsoluteY: 0,
     data: createDefaultNodeData(data),
     selected: false,
   });

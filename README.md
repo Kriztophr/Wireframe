@@ -62,6 +62,10 @@ For additional provider configuration (Kimi, Claude) and per-request overrides, 
 - **Styling**: Tailwind CSS
 - **AI**: Google Gemini API, OpenAI API, Replicate (Beta), fal.ai (Beta)
 
+Security & Governance
+---------------------
+Production deployments should follow the guidance in `docs/security-governance.md` for secrets management, TLS, logging, and compliance.
+
 ## Getting Started
 
 ### Prerequisites

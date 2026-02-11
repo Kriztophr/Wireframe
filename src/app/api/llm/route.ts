@@ -190,7 +190,7 @@ async function generateWithOpenAI(
   return text;
 }
 
-async function generateWithKimi(
+export async function generateWithKimi(
   prompt: string,
   model: LLMModelType,
   temperature: number,
@@ -256,7 +256,7 @@ async function generateWithKimi(
   return await generateWithOpenAI(prompt, model, temperature, maxTokens, images, requestId, apiKey);
 }
 
-async function generateWithClaude(
+export async function generateWithClaude(
   prompt: string,
   model: LLMModelType,
   temperature: number,

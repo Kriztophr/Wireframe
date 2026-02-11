@@ -63,6 +63,14 @@ describe("OutputNode", () => {
   }> = {}) => ({
     id: "output-node-1",
     type: "output" as const,
+    draggable: true,
+    dragging: false,
+    selectable: true,
+    deletable: true,
+    zIndex: 0,
+    isConnectable: true,
+    positionAbsoluteX: 0,
+    positionAbsoluteY: 0,
     data: {
       image: null,
       ...data,

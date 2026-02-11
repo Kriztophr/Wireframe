@@ -106,6 +106,14 @@ describe("AnnotationNode", () => {
   const createNodeProps = (data: Partial<AnnotationNodeData> = {}) => ({
     id: "test-annotation-1",
     type: "annotation" as const,
+    draggable: true,
+    dragging: false,
+    selectable: true,
+    deletable: true,
+    zIndex: 0,
+    isConnectable: true,
+    positionAbsoluteX: 0,
+    positionAbsoluteY: 0,
     data: createNodeData(data),
     selected: false,
   });

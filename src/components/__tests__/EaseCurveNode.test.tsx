@@ -125,6 +125,14 @@ const createNodeData = (
 const createNodeProps = (data: Partial<EaseCurveNodeData> = {}) => ({
   id: "test-ease-1",
   type: "easeCurve" as const,
+  draggable: true,
+  dragging: false,
+  selectable: true,
+  deletable: true,
+  zIndex: 0,
+  isConnectable: true,
+  positionAbsoluteX: 0,
+  positionAbsoluteY: 0,
   data: createNodeData(data),
   selected: false,
 });

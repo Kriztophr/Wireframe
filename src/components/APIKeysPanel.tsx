@@ -94,9 +94,30 @@ export function APIKeysPanel() {
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
   const [validating, setValidating] = useState<Set<string>>(new Set());
   const [saved, setSaved] = useState(false);
+  const [isProductionMode, setIsProductionMode] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  // Load keys from localStorage on mount
+  // Check if we're in production secure mode
   useEffect(() => {
+    const checkMode = async () => {
+      try {
+        const response = await fetch("/api/env-status");
+        const data = await response.json();
+        // If we get a 403 on save-keys, we're in production mode
+        setIsProductionMode(data.isProduction || false);
+      } catch (e) {
+        // Assume non-production if check fails
+      }
+    };
+    checkMode();
+  }, []);
+
+  // Load keys from localStorage on mount (only in non-production mode)
+  useEffect(() => {
+    if (isProductionMode) {
+      // Don't load from localStorage in production
+      return;
+    }
     const stored = localStorage.getItem(API_KEYS_STORAGE_KEY);
     if (stored) {
       try {
@@ -106,7 +127,7 @@ export function APIKeysPanel() {
         console.error("Failed to load API keys:", e);
       }
     }
-  }, []);
+  }, [isProductionMode]);
 
   // Check which keys are set from environment or localStorage
   useEffect(() => {
@@ -121,6 +142,9 @@ export function APIKeysPanel() {
             openai: { ...prev.openai, isSet: !!data.keys.OPENAI_API_KEY },
             replicate: { ...prev.replicate, isSet: !!data.keys.REPLICATE_API_KEY },
             fal: { ...prev.fal, isSet: !!data.keys.FAL_API_KEY },
+            kimi: { ...prev.kimi, isSet: !!data.keys.KIMI_API_KEY },
+            claude: { ...prev.claude, isSet: !!data.keys.CLAUDE_API_KEY },
+            kling: { ...prev.kling, isSet: !!data.keys.KLING_API_KEY },
           }));
         }
       } catch (e) {
@@ -134,8 +158,8 @@ export function APIKeysPanel() {
   const handleKeyChange = (providerId: string, value: string) => {
     setKeys((prev) => ({
       ...prev,
-      [providerId]: { ...prev[providerId], key: value, isSet: !!value },
-    }));
+      [providerId as keyof APIKeysState]: { ...prev[providerId as keyof APIKeysState], key: value, isSet: !!value },
+    } as APIKeysState));
     setSaved(false);
   };
 
@@ -153,22 +177,31 @@ export function APIKeysPanel() {
 
   const saveKeys = async () => {
     try {
-      // Save to localStorage (base64 encoded for minimal obfuscation)
+      setSaveError(null);
+
+      // In production mode, don't allow saving to localStorage
+      if (isProductionMode) {
+        setSaveError("Production mode: Manage API keys via environment variables or secrets manager");
+        return;
+      }
+
+      // Save to localStorage (base64 encoded for minimal obfuscation - dev only)
       const encoded = btoa(JSON.stringify(keys));
       localStorage.setItem(API_KEYS_STORAGE_KEY, encoded);
 
-      // Also save to backend .env.local if possible
+      // Try to sync to backend, but don't fail if it doesn't work
       await fetch("/api/save-api-keys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(keys),
-      }).catch(() => {
-        // Backend save is optional
+      }).catch((e) => {
+        console.warn("Backend key sync failed:", e);
       });
 
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Failed to save keys");
       console.error("Failed to save API keys:", e);
     }
   };
@@ -210,8 +243,8 @@ export function APIKeysPanel() {
   const clearKey = (providerId: string) => {
     setKeys((prev) => ({
       ...prev,
-      [providerId]: { key: "", isSet: false },
-    }));
+      [providerId as keyof APIKeysState]: { key: "", isSet: false },
+    } as APIKeysState));
     setSaved(false);
   };
 
@@ -234,9 +267,53 @@ export function APIKeysPanel() {
       <div>
         <h2 className="text-2xl font-bold text-neutral-100 mb-2">API Keys</h2>
         <p className="text-neutral-400">
-          Add your API keys to enable different AI providers and features. Keys are stored securely in your browser.
+          {isProductionMode
+            ? "API keys are managed via environment variables or secure secrets manager. Do not store keys in the browser."
+            : "Add your API keys to enable different AI providers and features. (Development mode: Keys stored in browser localStorage)"}
         </p>
       </div>
+
+      {/* Security Warning for Development */}
+      {!isProductionMode && (
+        <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-lg p-4">
+          <div className="flex gap-3">
+            <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-yellow-200 font-semibold mb-1">⚠️ Development Mode Security Notice</h3>
+              <p className="text-yellow-100/80 text-sm">
+                API keys are stored in browser localStorage with only base64 encoding. This is unsafe for production.
+                Use environment variables or a secrets manager in production.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Production Mode Warning */}
+      {isProductionMode && (
+        <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4">
+          <div className="flex gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-red-200 font-semibold mb-1">🔒 Production Secure Mode</h3>
+              <p className="text-red-100/80 text-sm">
+                You are in production secure mode. API keys must be set via environment variables or secrets manager.
+                The browser cannot store or transmit sensitive credentials.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Error */}
+      {saveError && (
+        <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4">
+          <div className="flex gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-red-100 text-sm">{saveError}</p>
+          </div>
+        </div>
+      )}
 
       {/* Quick Start Info */}
       <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
@@ -290,10 +367,13 @@ export function APIKeysPanel() {
                     type={isVisible ? "text" : "password"}
                     value={keyData.key}
                     onChange={(e) => handleKeyChange(provider.id, e.target.value)}
-                    placeholder="Paste your API key here..."
-                    className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-3 pr-12 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600"
+                    disabled={isProductionMode}
+                    placeholder={isProductionMode ? "Keys configured via environment variables" : "Paste your API key here..."}
+                    className={`w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-3 pr-12 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 ${
+                      isProductionMode ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   />
-                  {keyData.key && (
+                  {keyData.key && !isProductionMode && (
                     <button
                       onClick={() => toggleKeyVisibility(provider.id)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-300 transition-colors"
@@ -316,7 +396,7 @@ export function APIKeysPanel() {
 
               {/* Actions */}
               <div className="flex gap-2 mt-4">
-                {keyData.key && (
+                {keyData.key && !isProductionMode && (
                   <>
                     <button
                       onClick={() => testKey(provider.id)}
@@ -354,9 +434,12 @@ export function APIKeysPanel() {
         </div>
         <button
           onClick={saveKeys}
-          className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+          disabled={isProductionMode}
+          className={`px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors ${
+            isProductionMode ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          Save All Keys
+          {isProductionMode ? "Production Mode" : "Save All Keys"}
         </button>
       </div>
 
@@ -364,13 +447,18 @@ export function APIKeysPanel() {
       <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4 text-sm text-neutral-400">
         <p className="font-semibold text-neutral-300 mb-2">🔒 Security & Privacy</p>
         <ul className="space-y-1 text-xs">
-          <li>• Keys are stored locally in your browser, never sent to our servers</li>
-          <li>• Each API call goes directly to the provider's servers</li>
-          <li>• You can clear keys at any time</li>
-          <li>• For server deployments, add keys to your <code className="bg-neutral-900 px-2 py-1 rounded">.env.local</code> file</li>
+          {!isProductionMode && (
+            <>
+              <li>• Keys are stored locally in your browser, never sent to our servers</li>
+              <li>• Each API call goes directly to the provider's servers</li>
+              <li>• You can clear keys at any time</li>
+            </>
+          )}
+          <li>• For server deployments, add keys to your <code className="bg-neutral-900 px-2 py-1 rounded">.env.local</code> or secrets manager</li>
+          <li>• Production environments must use environment variables or secure secrets management</li>
         </ul>
         <p className="text-xs mt-3">
-          Read more: <a href="/docs/kimi-claude-integration.md" className="text-blue-400 hover:text-blue-300" target="_blank" rel="noopener noreferrer">Kimi &amp; Claude integration docs</a>
+          Read more: <a href="/docs/kimi-claude-integration" className="text-blue-400 hover:text-blue-300" target="_blank" rel="noopener noreferrer">Kimi & Claude integration docs</a>
         </p>
       </div>
     </div>

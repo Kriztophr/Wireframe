@@ -77,6 +77,14 @@ describe("GroupNode", () => {
   const createNodeProps = (data: { groupId: string } = { groupId: "group-1" }) => ({
     id: "group-node-1",
     type: "group" as const,
+    draggable: true,
+    dragging: false,
+    selectable: true,
+    deletable: true,
+    zIndex: 0,
+    isConnectable: true,
+    positionAbsoluteX: 0,
+    positionAbsoluteY: 0,
     data,
     selected: false,
   });

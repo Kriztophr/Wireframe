@@ -402,7 +402,7 @@ export function Header() {
           </span>
           <span className="text-neutral-400">Made by Willie</span>
           <a
-            href="/docs/kimi-claude-integration.md"
+            href="/docs/kimi-claude-integration"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-blue-400 hover:text-blue-300 ml-2"
